@@ -51,18 +51,60 @@ class AE(nn.Module):
     self.dec_model = nn.Sequential(*dec_layers)
 
   def encode(self, x):
+    '''
+    Enocdes x into the latent space
+    ---
+    Parameters:
+    * x (torch.tensor) : The dataset to encode (size: num_examples x in_dim)
+
+    Returns:
+    * l (torch.tensor) : Projection into the latent space of original data (size: num_examples x latent_dim)
+    '''
     return self.enc_model(x)
 
-  def decode(self, x):
-    return self.dec_model(x)
+  def decode(self, l):
+    '''
+    Decode l from the latent space into the initial dataset
+    ---
+    Parameters:
+    * l (torch.tensor) : The encoded latent space representation (size: num_examples x latent_dim)
+
+    Returns:
+    * x (torch.tensor) : Approximation of the original dataset encoded (size: num_examples x in_dim)
+    '''
+    return self.dec_model(l)
 
   def forward(self, x):
+    '''
+    Feed raw dataset through encoder -> decoder model in order to generate overall approximation from latent space
+    ---
+    Parameters:
+    * x (torch.tensor) : The dataset to encode (size: num_examples x in_dim)
+
+    Returns:
+    * x (torch.tensor) : Approximation of the original dataset from the encoded latent space (size: num_examples x in_dim)
+    '''
     flat_x = x.view(x.size(0), -1)
     h = self.encode(flat_x)
     return self.decode(h).view(x.size())
 
 def train_autoencoder(autoencoder, dataset, device, epochs=20, batch_size=250,
                       seed=0):
+  '''
+  Train the provided "autoencoder" model on the provided tensor dataset.
+  ---
+  Parameters:
+  * autoencoder (AE) : AE model to train
+  * dataset (torch.tensor) : The dataset to encode (size: num_examples x in_dim)
+  * device (str) : Device to use for training ('cuda' or 'cpu')
+  * epochs (int) : Number of iterations through the entire dataset on which to train
+  * batch_size (int) : Number of examples in randomly sampled batches to pass through the model
+  * seed (int) : Random seed to use for the model
+
+  Returns:
+  * mse_loss (torch.tensor) : List of Mean Squared Error losses by training timestep
+  '''
+
   autoencoder.to(DEVICE)
   optim = torch.optim.Adam(autoencoder.parameters(),
                            lr=1e-2,
