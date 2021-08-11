@@ -31,11 +31,9 @@ class AE(nn.Module):
     layers_a = [[nn.Linear(in_dim, enc_lst[0], bias=True), nn.ReLU()]]
     layers_a += [[nn.Linear(enc_lst[idim], enc_lst[idim+1], bias=True), nn.ReLU()] for idim in range(len(enc_lst)-1)]
     layers_a += [[nn.Linear(enc_lst[-1], latent_dim, bias=True)]]
-
     enc_layers = []
     for layer in layers_a:
       enc_layers += layer
-
     self.enc_model = nn.Sequential(*enc_layers)
 
 
@@ -43,11 +41,9 @@ class AE(nn.Module):
     layers_a = [[nn.Linear(latent_dim, dec_lst[0], bias=True), nn.ReLU()]]
     layers_a += [[nn.Linear(dec_lst[idim], dec_lst[idim+1], bias=True), nn.ReLU()] for idim in range(len(dec_lst)-1)]
     layers_a += [[nn.Linear(dec_lst[-1], in_dim, bias=True)]]
-
     dec_layers = []
     for layer in layers_a:
       dec_layers += layer
-
     self.dec_model = nn.Sequential(*dec_layers)
 
   def encode(self, x):
@@ -151,11 +147,13 @@ if __name__ == '__main__':
     nmas.set_seed(seed=SEED)
     DEVICE = nmas.set_device()
 
+    
+    x_a = np.random.choice(10000, size=100000)
+    tmp = np.tile(np.arange(-1,2), (x_a.shape[0],1))
+    x = np.tile(x_a.reshape(-1,1), [1, 3]) + tmp
 
-    x_a = torch.tensor(np.random.choice(10000, size=100000)).float()
-    tmp = torch.tensor(np.tile(np.arange(-1,2), (x_a.size(0),1)))
-    x = torch.tile(x_a.view(-1,1), [1, 3]) + tmp
-
+    tmp = torch.tensor(tmp).float()
+    x = torch.tensor(x).float()
 
     vae = AE(x.size(-1), 1, [5], [5])
     loss = train_autoencoder(vae, x, DEVICE, epochs=100, batch_size=250, seed=0)
