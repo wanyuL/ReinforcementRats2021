@@ -84,7 +84,7 @@ class AE(nn.Module):
     h = self.encode(flat_x)
     return self.decode(h).view(x.size())
 
-def train_autoencoder(autoencoder, dataset, device, epochs=20, batch_size=250,
+def train_autoencoder(autoencoder, dataset, device, val_dataset=None, epochs=20, batch_size=250,
                       seed=0):
   '''
   Train the provided "autoencoder" model on the provided tensor dataset.
@@ -93,6 +93,7 @@ def train_autoencoder(autoencoder, dataset, device, epochs=20, batch_size=250,
   * autoencoder (AE) : AE model to train
   * dataset (torch.tensor) : The dataset to encode (size: num_examples x in_dim)
   * device (str) : Device to use for training ('cuda' or 'cpu')
+  * val_dataset (torch.tensor) : The datset to encode for validation loss (size: num_examples x in_dim)
   * epochs (int) : Number of iterations through the entire dataset on which to train
   * batch_size (int) : Number of examples in randomly sampled batches to pass through the model
   * seed (int) : Random seed to use for the model
@@ -116,8 +117,16 @@ def train_autoencoder(autoencoder, dataset, device, epochs=20, batch_size=250,
                       num_workers=2,
                       worker_init_fn=nmas.seed_worker,
                       generator=g_seed)
+  
 
   mse_loss = torch.zeros(epochs * len(dataset) // batch_size, device=device)
+  
+  full_mse_loss = torch.zeros(epochs, device=device)
+  if val_dataset is not None:
+    full_val_loss = torch.zeros(epochs, device=device)
+  else:
+    full_val_loss = None
+  
   i = 0
   for epoch in trange(epochs, desc='Epoch'):
     # print(len(list(itertools.islice(loader, 1))))
@@ -133,14 +142,36 @@ def train_autoencoder(autoencoder, dataset, device, epochs=20, batch_size=250,
 
       mse_loss[i] = loss.detach()
       i += 1
+
+
+    with torch.no_grad():
+      fim_batch = dataset.to(device)
+      freconstruction = autoencoder(fim_batch)
+      floss = loss_fn(freconstruction.view(fim_batch.size(0), -1),
+                      target=fim_batch.view(fim_batch.size(0), -1))
+      full_mse_loss[epoch] = floss.detach()
+      
+      if val_dataset is not None:
+          val_im_batch = val_dataset.to(device)
+          val_reconstruction = autoencoder(val_im_batch)
+          val_loss = loss_fn(val_reconstruction.view(val_im_batch.size(0), -1),
+                            target=val_im_batch.view(val_im_batch.size(0), -1))
+          full_val_loss[epoch] = val_loss.detach()
     
-    if epoch % 100 == 0:
-      print(mse_loss[i])
+
+    if epoch % 10 == 0:
+      print(f'MSE Train Loss @ {epoch}: {full_mse_loss[epoch]}')
+      if val_dataset is not None:
+        print(f'MSE Val Loss @ {epoch}: {full_val_loss[epoch]}')
   
   # After training completes, make sure the model is on CPU so we can easily
   # do more visualizations and demos.
   autoencoder.to('cpu')
-  return mse_loss.cpu()
+
+  tr_mse = full_mse_loss.cpu()
+  val_mse = full_val_loss.cpu() if val_dataset is not None else None
+
+  return tr_mse, val_mse
 
 if __name__ == '__main__':
     SEED = 2021
@@ -148,14 +179,19 @@ if __name__ == '__main__':
     DEVICE = nmas.set_device()
 
     
-    x_a = np.random.choice(10000, size=100000)
+    x_a = np.random.choice(10000, size=10000)
     tmp = np.tile(np.arange(-1,2), (x_a.shape[0],1))
     x = np.tile(x_a.reshape(-1,1), [1, 3]) + tmp
 
-    tmp = torch.tensor(tmp).float()
+    inx = np.random.choice(x.shape[0])
+    
     x = torch.tensor(x).float()
 
-    vae = AE(x.size(-1), 1, [5], [5])
-    loss = train_autoencoder(vae, x, DEVICE, epochs=100, batch_size=250, seed=0)
+    x_tr = x[:-x.size(0)//5]
+    x_val = x[-x.size(0)//5:]
 
-    plt.plot(loss)
+    vae = AE(x.size(-1), 1, [5], [5])
+    loss, val_loss = train_autoencoder(vae, x_tr, DEVICE, epochs=20, batch_size=250, seed=0)
+
+    print(f'Final Training Loss: {loss}')
+    print(f'Final Validation Loss: {val_loss}')
