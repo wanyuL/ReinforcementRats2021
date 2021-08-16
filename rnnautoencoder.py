@@ -28,9 +28,9 @@ class RNNAE(nn.Module):
     self.out_dim = in_dim
 
     # Create Encoder Model
-    layers_a = [[nn.RNN(in_dim, enc_lst[0], bias=True, nonlinearity='relu'),]]
-    layers_a += [[nn.RNN(enc_lst[idim], enc_lst[idim+1], bias=True, nonlinearity='relu')] for idim in range(len(enc_lst)-1)]
-    layers_a += [[nn.RNN(enc_lst[-1], latent_dim, bias=True)]]
+    layers_a = [[nn.GRU(in_dim, enc_lst[0], bias=True),]]
+    layers_a += [[nn.GRU(enc_lst[idim], enc_lst[idim+1], bias=True)] for idim in range(len(enc_lst)-1)]
+    layers_a += [[nn.GRU(enc_lst[-1], latent_dim, bias=True)]]
     enc_layers = []
     for layer in layers_a:
       enc_layers += layer
@@ -38,9 +38,9 @@ class RNNAE(nn.Module):
 
 
     # Create Decoder Model
-    layers_a = [[nn.RNN(latent_dim, dec_lst[0], bias=True, nonlinearity='relu')]]
-    layers_a += [[nn.RNN(dec_lst[idim], dec_lst[idim+1], bias=True, nonlinearity='relu')] for idim in range(len(dec_lst)-1)]
-    layers_a += [[nn.RNN(dec_lst[-1], in_dim, bias=True)]]
+    layers_a = [[nn.GRU(latent_dim, dec_lst[0], bias=True)]]
+    layers_a += [[nn.GRU(dec_lst[idim], dec_lst[idim+1], bias=True)] for idim in range(len(dec_lst)-1)]
+    layers_a += [[nn.GRU(dec_lst[-1], in_dim, bias=True), torch.nn.ELU()]]
     dec_layers = []
     for layer in layers_a:
       dec_layers += layer
@@ -52,7 +52,10 @@ class RNNAE(nn.Module):
     
   def custom_seq(self, model, x):
     for layer in model:
-      x, _ = layer(x)
+      try:
+        x, _ = layer(x)
+      except:
+        x = layer(x)
     return x
 
   def encode(self, x):
