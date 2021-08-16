@@ -77,11 +77,11 @@ class rnn0(nn.Module):
 
       with torch.no_grad():
         prd_train_full, _ = rnn0net(train_inputdata)
-        lossfull_train = lossfn(prd_train_full, train_targetdata).mean()
+        lossfull_train = lossfn(prd_train_full, train_targetdata)
         train_losst[k] = lossfull_train   # loss for the entire dataset!
         if val_inputdata is not None and val_targetdata is not None:
           prd_val, _ = rnn0net(val_inputdata)
-          loss_val = lossfn(prd_val, val_targetdata).mean()
+          loss_val = lossfn(prd_val, val_targetdata)
           val_losst[k] = loss_val   # loss for the entire dataset!
         else:
           loss_val=torch.tensor(np.nan,device=device)
