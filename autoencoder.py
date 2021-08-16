@@ -121,6 +121,7 @@ def train_autoencoder(autoencoder, dataset, device, val_dataset=None, epochs=20,
 
   mse_loss = torch.zeros(epochs * len(dataset) // batch_size, device=device)
   
+  # Creating a version of losses for tracking full dataset loss
   full_mse_loss = torch.zeros(epochs, device=device)
   if val_dataset is not None:
     full_val_loss = torch.zeros(epochs, device=device)
@@ -144,6 +145,7 @@ def train_autoencoder(autoencoder, dataset, device, val_dataset=None, epochs=20,
       i += 1
 
 
+    # Calculate full dataset losses at the end of each epoch
     with torch.no_grad():
       fim_batch = dataset.to(device)
       freconstruction = autoencoder(fim_batch)
@@ -185,13 +187,14 @@ if __name__ == '__main__':
 
     inx = np.random.choice(x.shape[0])
     
+    x = x[inx]
     x = torch.tensor(x).float()
 
     x_tr = x[:-x.size(0)//5]
     x_val = x[-x.size(0)//5:]
 
     vae = AE(x.size(-1), 1, [5], [5])
-    loss, val_loss = train_autoencoder(vae, x_tr, DEVICE, epochs=20, batch_size=250, seed=0)
+    loss, val_loss = train_autoencoder(vae, x_tr, DEVICE, x_val, epochs=20, batch_size=250, seed=0)
 
     print(f'Final Training Loss: {loss}')
     print(f'Final Validation Loss: {val_loss}')
