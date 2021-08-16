@@ -49,7 +49,8 @@ class rnn0(nn.Module):
     # we define the Poisson log-likelihood loss; 
     def Poisson_loss(lam, spk):    # lam: lambda of Poisson distribution = output seq of rnn0 ; spk: output trace (output we are trying to fit to)
       return (lam - spk * torch.log(lam)).mean()
-
+      # return ( - spk * torch.log(lam)).mean()
+      # return (spk - lam * torch.log(spk)).mean()
 
     optimizer = torch.optim.Adam(rnn0net.parameters(), lr)      
     train_losst = torch.zeros(nepoch, device=device)   # loss over time holder for training set
@@ -65,17 +66,11 @@ class rnn0(nn.Module):
      
       # our log-likelihood cost
       if lossfn is None:   # no specified loss function: default Poission loss fn
-<<<<<<< HEAD
-        loss = Poisson_loss(prd, train_targetdata_batch).mean()  # loss for the current batch
-      else:
-        loss=lossfn(prd, train_targetdata_batch)
-=======
         # loss = Poisson_loss(prd, train_targetdata_batch).mean()  # loss for the current batch
         lossfn = Poisson_loss
         # loss = Poisson_loss(train_targetdata_batch,prd).mean()
       # else:
       loss=lossfn(prd, train_targetdata_batch)
->>>>>>> 7166ac8869b731db74d1d649304324939218cf9d
       # train the network as usual
       loss.backward()
       optimizer.step()
