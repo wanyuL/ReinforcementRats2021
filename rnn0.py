@@ -62,7 +62,7 @@ class rnn0(nn.Module):
       train_inputdata_batch=train_inputdata[:,ind,:]
       train_targetdata_batch=train_targetdata[:,ind,:]
     # the network outputs the single-neuron prediction and the latents
-      prd, latv = rnn0net(train_inputdata_batch)     # prediction and latent variables
+      prd, _ = rnn0net(train_inputdata_batch)     # prediction
      
       # our log-likelihood cost
       if lossfn is None:   # no specified loss function: default Poission loss fn
@@ -77,7 +77,7 @@ class rnn0(nn.Module):
       optimizer.zero_grad()
 
       with torch.no_grad():
-        prd_train_full, _ = rnn0net(train_inputdata)
+        prd_train_full, latv = rnn0net(train_inputdata)
         lossfull_train = lossfn(prd_train_full, train_targetdata)
         train_losst[k] = lossfull_train   # loss for the entire dataset!
         if val_inputdata is not None and val_targetdata is not None:
