@@ -64,7 +64,7 @@ class rnn0(nn.Module):
       prd, latv = rnn0net(train_inputdata_batch)     # prediction and latent variables
      
       # our log-likelihood cost
-      if lossfn is not None:   # no specified loss function: default Poission loss fn
+      if lossfn is None:   # no specified loss function: default Poission loss fn
         loss = Poisson_loss(prd, train_targetdata_batch).mean()  # loss for the current batch
       else:
         loss=lossfn(prd, train_targetdata_batch)
