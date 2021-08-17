@@ -40,7 +40,7 @@ class RNNAE(nn.Module):
     # Create Decoder Model
     layers_a = [[nn.GRU(latent_dim, dec_lst[0], bias=True)]]
     layers_a += [[nn.GRU(dec_lst[idim], dec_lst[idim+1], bias=True)] for idim in range(len(dec_lst)-1)]
-    layers_a += [[nn.GRU(dec_lst[-1], in_dim, bias=True), torch.nn.ELU()]]
+    layers_a += [[nn.Linear(dec_lst[-1], in_dim, bias=True), nn.ReLU()]]
     dec_layers = []
     for layer in layers_a:
       dec_layers += layer
@@ -137,13 +137,17 @@ def train_autoencoder(autoencoder, dataset, device, val_dataset=None, epochs=20,
   
   # Creating a version of losses for tracking full dataset loss
   full_mse_loss = torch.zeros(epochs, device=device)
+  full_acc = torch.zeros(epochs, device=device)
   if val_dataset is not None:
     full_val_loss = torch.zeros(epochs, device=device)
+    full_val_acc = torch.zeros(epochs, device=device)
   else:
     full_val_loss = None
+    full_val_acc = None
   
   i = 0
   for epoch in trange(epochs, desc='Epoch'):
+    
     
     # Calculate full dataset losses at the end of each epoch
     with torch.no_grad():
@@ -153,12 +157,21 @@ def train_autoencoder(autoencoder, dataset, device, val_dataset=None, epochs=20,
                       target=fim_batch.view(fim_batch.size(0), -1))
       full_mse_loss[epoch] = floss.detach()
       
+      full_acc[epoch] = torch.mean((freconstruction - fim_batch < 0.1).float()).detach()
+      
       if val_dataset is not None:
           val_im_batch = val_dataset.to(device)
           val_reconstruction = autoencoder(val_im_batch)
           val_loss = loss_fn(val_reconstruction.view(val_im_batch.size(0), -1),
                             target=val_im_batch.view(val_im_batch.size(0), -1))
           full_val_loss[epoch] = val_loss.detach()
+
+          full_val_acc[epoch] = torch.mean((val_reconstruction - val_im_batch < 0.1).float())
+    
+      if epoch % 10 == 0:
+        print(f'MSE Train @ {epoch}: Loss — {full_mse_loss[epoch].cpu()}, Acc — {full_acc[epoch].cpu()}')
+        if val_dataset is not None:
+          print(f'\tVal @ {epoch}: Loss — {full_val_loss[epoch].cpu()}, Acc — {full_val_acc[epoch].cpu()}')
     
 
     # print(len(list(itertools.islice(loader, 1))))
@@ -178,12 +191,6 @@ def train_autoencoder(autoencoder, dataset, device, val_dataset=None, epochs=20,
       # i += 1
 
 
-
-    if epoch % 10 == 0:
-      print(f'MSE Train Loss @ {epoch}: {full_mse_loss[epoch]}')
-      if val_dataset is not None:
-        print(f'MSE Val Loss @ {epoch}: {full_val_loss[epoch]}')
-  
   # After training completes, make sure the model is on CPU so we can easily
   # do more visualizations and demos.
   autoencoder.to('cpu')
