@@ -157,7 +157,7 @@ def train_autoencoder(autoencoder, dataset, device, val_dataset=None, epochs=20,
                       target=fim_batch.view(fim_batch.size(0), -1))
       full_mse_loss[epoch] = floss.detach()
       
-      full_acc[epoch] = torch.mean((freconstruction - fim_batch < 0.1).float()).detach()
+      full_acc[epoch] = torch.mean(((freconstruction - fim_batch).abs() < 0.1).float()).detach()
       
       if val_dataset is not None:
           val_im_batch = val_dataset.to(device)
@@ -166,7 +166,7 @@ def train_autoencoder(autoencoder, dataset, device, val_dataset=None, epochs=20,
                             target=val_im_batch.view(val_im_batch.size(0), -1))
           full_val_loss[epoch] = val_loss.detach()
 
-          full_val_acc[epoch] = torch.mean((val_reconstruction - val_im_batch < 0.1).float())
+          full_val_acc[epoch] = torch.mean(((val_reconstruction - val_im_batch).abs() < 0.1).float())
     
       if epoch % 10 == 0:
         print(f'MSE Train @ {epoch}: Loss — {full_mse_loss[epoch].cpu()}, Acc — {full_acc[epoch].cpu()}')
