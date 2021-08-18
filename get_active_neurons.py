@@ -9,6 +9,7 @@ get_ind_active_neurons: get thresholded (active) individual neuron activity
 
 import numpy as np
 import os, requests
+import matplotlib.pyplot as plt
 # get all subjects raw data from the online database
 def get_all_subject():
   fname = []
