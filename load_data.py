@@ -1,5 +1,7 @@
 import numpy as np
 import os, urllib.request
+import pickle
+import nmastandard as nmas
 
 # Data URLs
 urlfiles = {
@@ -111,3 +113,32 @@ def load_neural_data(subject=11):
     Cori_MOs = Cori_MOs.transpose(2, 1, 0) # time x batch x neurons
 
     return Cori_MOs
+
+def gen_save_indices(spk, ntrials):
+    SEED = 2021
+    nmas.set_seed(seed=SEED)
+    idx_selection = np.random.choice(spk.shape[1], size=spk.shape[1])
+
+    trainidx = idx_selection[:ntrials*3//5]
+    validx = idx_selection[ntrials*3//5:ntrials*4//5]
+    testidx = idx_selection[ntrials*4//5:]
+
+    file = open("Cori_Post_trainidx.pkl",'wb')
+    pickle.dump(trainidx, file)
+    file = open("Cori_Post_validx.pkl",'wb')
+    pickle.dump(validx, file)
+    file = open("Cori_Post_testidx.pkl",'wb')
+    pickle.dump(testidx, file)
+
+    return
+
+def pull_indices():
+
+    file = open("Cori_Post_trainidx.pkl",'rb')
+    trainidx = pickle.load(file)
+    file = open("Cori_Post_validx.pkl",'rb')
+    validx = pickle.load(file)
+    file = open("Cori_Post_testidx.pkl",'rb')
+    testidx = pickle.load(file)
+
+    return trainidx, validx, testidx
