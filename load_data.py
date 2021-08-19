@@ -132,6 +132,12 @@ def gen_save_indices(spk, ntrials):
 
     return
 
+
+def save_data(data, filename):
+    file = open(f"{filename}.pkl",'wb')
+    pickle.dump(data, file)
+    return
+
 def pull_indices():
 
     file = open("Cori_Post_trainidx.pkl",'rb')
