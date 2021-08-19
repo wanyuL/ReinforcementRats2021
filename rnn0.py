@@ -12,10 +12,10 @@ class rnn0(nn.Module):
 
     # play with some of the options in the RNN!
 
-    self.rnn = nn.RNN(NN1, ncomp, num_layers = 1, dropout = dropout,
-                      bidirectional = bidi, nonlinearity = 'tanh')    # relu doesn't work
-    # self.rnn = nn.GRU(NN1, ncomp, num_layers = 1, dropout = 0,
-    #                   bidirectional = bidi)      # Elman rnn seems to work better than gru and lstm
+    # self.rnn = nn.RNN(NN1, ncomp, num_layers = 1, dropout = dropout,
+                      # bidirectional = bidi, nonlinearity = 'tanh')    # relu doesn't work
+    self.rnn = nn.GRU(NN1, ncomp, num_layers = 1, dropout = 0,
+                      bidirectional = bidi)      # Elman rnn seems to work better than gru and lstm
     self.fc = nn.Linear(ncomp, NN2)
 
   def forward(self, x):
@@ -77,11 +77,11 @@ class rnn0(nn.Module):
       optimizer.zero_grad()
 
       with torch.no_grad():
-        prd_train_full, latv = rnn0net(train_inputdata)
+        prd_train_full, train_latv = rnn0net(train_inputdata)
         lossfull_train = lossfn(prd_train_full, train_targetdata)
         train_losst[k] = lossfull_train   # loss for the entire dataset!
         if val_inputdata is not None and val_targetdata is not None:
-          prd_val, _ = rnn0net(val_inputdata)
+          prd_val, val_latv = rnn0net(val_inputdata)
           loss_val = lossfn(prd_val, val_targetdata)
           val_losst[k] = loss_val   # loss for the entire dataset!
         else:
@@ -96,4 +96,4 @@ class rnn0(nn.Module):
     plt.ylabel("loss")
     plt.legend()
     plt.show()
-    return train_losst, val_losst, latv  # loss and latent variables
+    return train_losst, val_losst, train_latv, val_latv # loss and latent variables
