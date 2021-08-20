@@ -55,7 +55,7 @@ def get_ind_active_neurons(alldat,subject,brain_region,min_spk_per_trial,plotopt
   print('active spk shape',act_spk.shape) # time, trial, neuron
   
   if plotopt is not None:   # plot before and after sum of spikes per trial
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(10, 4))
     plt.subplot(121)
     plt.imshow(spk.sum(axis=(0)))
     plt.colorbar()
