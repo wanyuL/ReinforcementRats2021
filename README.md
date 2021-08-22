@@ -15,7 +15,7 @@ In this repository, we construct several artifitial neural networks (ANNs) using
 
 
 ### Results:
-In this project, we check the neural data **reconstruction errors** (MSE) of different state-of-art ANNs and traditional PCA (results could be found in the second part of `RNN_Notebook.ipynb`). We then do logistic regression on extracted latent varibales (independent variables) and behavorial outputs (dependent variable) of each trial and check the **classification error** of each methods. Classification related code could be found in `LOO_CV.ipynb` and `BehavioralClassifier.ipynb`.
+In this project, we check the neural data **reconstruction errors** (MSE) of different state-of-th-art ANNs and traditional PCA (results could be found in the second part of `RNN_Notebook.ipynb`). We then do logistic regression on extracted latent varibales (independent variables) and behavorial outputs (dependent variable) of each trial and check the **classification error** of each methods. Classification related code could be found in `LOO_CV.ipynb` and `BehavioralClassifier.ipynb`.
 
 We also visualize the **latent trajectories** and their **behavioral representational similarity matrix** (RSM), which could be found in the first part of `RNN_Notebook.ipynb`.
 
