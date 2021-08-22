@@ -1,7 +1,7 @@
 # Low Dimensional Embedding of Neural Responses
 NMA-DL (2021) group project: Low Dimensional Embedding of Neural Responses
 
-In this repository, we construct several artifitial neural networks (ANNs) using **Pytorch**. The goal is to use these seqeunce-to-seqeunce models to extract low-dimensional latent variables from the population Neuropixel data from [Steinmetz et al. 2019 Nature](https://www.nature.com/articles/s41586-019-1787-x).
+In this repository, we construct several artifitial neural networks (ANNs) using **PyTorch**. The goal is to use these seqeunce-to-seqeunce models to extract low-dimensional latent variables from the population Neuropixel data from [Steinmetz et al. 2019 Nature](https://www.nature.com/articles/s41586-019-1787-x).
 
 ### ANNs:
 1. Autoencoder: `autoencoder.py`
