@@ -48,7 +48,7 @@ def get_ind_active_neurons(alldat,subject,brain_region,min_spk_per_trial,plotopt
   spk=dat['spks']   # neuron, trial, time
   spk=spk[NeuronInd,:,:]
   resp=dat['response']; # response of each trial
-  spk_per_trial=10 # minimum spk per trial
+
   spk=np.transpose(spk, (2, 1, 0))    # swap the dimension
   active_neuron_ind=spk.sum(axis=(0,1))>=spk_per_trial*spk.shape[1]     # thresholded neuron ind
   act_spk=spk[:,:,active_neuron_ind]     # thresholded active neurons
